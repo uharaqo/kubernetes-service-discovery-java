@@ -1,0 +1,105 @@
+plugins {
+  id 'java-library'
+  id "com.diffplug.spotless" version "6.10.0"
+  id 'signing'
+  id 'maven-publish'
+  id('io.github.gradle-nexus.publish-plugin') version '1.1.0'
+}
+
+group 'com.github.uharaqo.k8s.discovery'
+version '0.0.1-SNAPSHOT'
+
+sourceCompatibility = 11
+targetCompatibility = 11
+
+repositories {
+  mavenCentral()
+}
+
+configurations {
+}
+
+dependencies {
+  testImplementation platform('org.junit:junit-bom:5.9.0')
+  testImplementation 'org.junit.jupiter:junit-jupiter'
+}
+
+test {
+  useJUnitPlatform()
+}
+
+spotless {
+  // optional: limit format enforcement to just the files changed by this feature branch
+//    ratchetFrom 'origin/main'
+
+  format 'misc', {
+    // define the files to apply `misc` to
+    target '*.gradle', '*.md', '.gitignore'
+
+    // define the steps to apply to those files
+    trimTrailingWhitespace()
+    indentWithSpaces(2)
+    endWithNewline()
+  }
+  java {
+    importOrder('java', 'javax')
+    removeUnusedImports()
+    googleJavaFormat().reflowLongStrings()
+//        licenseHeader '/* (C) $YEAR */' // or licenseHeaderFile
+  }
+}
+
+publishing {
+  publications {
+    mavenJava(MavenPublication) {
+      from(components.java)
+      pom {
+        name = 'kubernetes-service-discovery-java'
+        description = 'Kubernetes Service Discovery Library'
+        url = 'https://github.com/uharaqo/kubernetes-service-discovery-java'
+        licenses {
+          license {
+            name = 'The Apache License, Version 2.0'
+            url = 'https://www.apache.org/licenses/LICENSE-2.0.txt'
+          }
+        }
+        developers {
+          developer {
+            id = 'uharaqo'
+            name = 'uharaqo'
+          }
+        }
+        scm {
+          url = 'https://github.com/uharaqo/kubernetes-service-discovery-java'
+          connection = 'scm:git://github.com/uharaqo/kubernetes-service-discovery-java.git'
+          developerConnection = 'scm:git://github.com/uharaqo/kubernetes-service-discovery-java.git'
+        }
+      }
+    }
+  }
+//  repositories {
+//    maven {
+//      name = "OSSRH" //  optional target repository name
+//      url = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+//      credentials {
+//        username = System.getenv("MAVEN_USERNAME")
+//        password = System.getenv("MAVEN_PASSWORD")
+//      }
+//    }
+//    maven {
+//      name = "GitHubPackages"
+//      url = "https://maven.pkg.github.com/uharaqo/kubernetes-service-discovery-java"
+//      credentials {
+//        username = System.getenv("GITHUB_ACTOR")
+//        password = System.getenv("GITHUB_TOKEN")
+//      }
+//    }
+//  }
+}
+
+signing {
+  def signingKey = findProperty("signingKey")
+  def signingPassword = findProperty("signingPassword")
+  useInMemoryPgpKeys(signingKey, signingPassword)
+  sign publishing.publications.mavenJava
+}
