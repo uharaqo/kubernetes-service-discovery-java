@@ -32,7 +32,7 @@ jacoco {
 }
 jacocoTestReport {
   reports {
-    csv.required = true
+    csv.enabled = true
   }
 }
 
