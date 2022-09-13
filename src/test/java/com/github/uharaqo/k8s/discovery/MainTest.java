@@ -8,6 +8,7 @@ class MainTest {
 
   @Test
   void dummy() {
+    new Main().main(new String[0]);
     assertTrue(true);
   }
 }

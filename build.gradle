@@ -1,9 +1,10 @@
 plugins {
   id 'java-library'
+  id 'jacoco'
   id "com.diffplug.spotless" version "6.10.0"
   id 'signing'
   id 'maven-publish'
-  id('io.github.gradle-nexus.publish-plugin') version '1.1.0'
+  id 'io.github.gradle-nexus.publish-plugin' version '1.1.0'
 }
 
 group 'com.github.uharaqo.k8s.discovery'
@@ -20,8 +21,19 @@ configurations {
 }
 
 dependencies {
+  compileOnly 'org.projectlombok:lombok:1.18.24'
+
   testImplementation platform('org.junit:junit-bom:5.9.0')
   testImplementation 'org.junit.jupiter:junit-jupiter'
+}
+
+jacoco {
+  toolVersion = "0.8.8"
+}
+jacocoTestReport {
+  reports {
+    csv.required = true
+  }
 }
 
 test {
