@@ -21,6 +21,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Flow.Publisher;
 import java.util.concurrent.SubmissionPublisher;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 
@@ -33,8 +34,8 @@ public class DefaultHttpHandler implements HttpHandler {
       String protocol,
       JsonDeserializer deserializer,
       SslContextProvider sslContextProvider,
-      Duration connectTimeout
-  ) {
+      Duration connectTimeout) {
+
     this.deserializer = deserializer;
     Builder builder = HttpClient.newBuilder();
     if ("https".equals(protocol)) {
@@ -55,22 +56,24 @@ public class DefaultHttpHandler implements HttpHandler {
   public CompletableFuture<Endpoints> getEndpoints(HttpRequest request) {
     return httpClient
         .sendAsync(request, BodyHandlers.ofString(UTF_8))
-        .thenApply(r -> {
-          try {
-            int statusCode = r.statusCode();
-            String body = r.body();
+        .thenApply(
+            r -> {
+              try {
+                int statusCode = r.statusCode();
+                String body = r.body();
 
-            if (statusCode == 200) {
-              return deserializer.deserializeEndpoints(body);
-            }
+                if (statusCode == 200) {
+                  return deserializer.deserializeEndpoints(body);
+                }
 
-            throw new KubernetesDiscoveryException(HTTP, format(
-                "HTTP Error Response. status: %d, body: %s", statusCode, body
-            ), null);
-          } catch (IOException e) {
-            throw new KubernetesDiscoveryException(HTTP, "HTTP call failed", e);
-          }
-        });
+                throw new KubernetesDiscoveryException(
+                    HTTP,
+                    format("HTTP Error Response. status: %d, body: %s", statusCode, body),
+                    null);
+              } catch (IOException e) {
+                throw new KubernetesDiscoveryException(HTTP, "HTTP call failed", e);
+              }
+            });
   }
 
   @Nonnull
@@ -80,38 +83,41 @@ public class DefaultHttpHandler implements HttpHandler {
     SubmissionPublisher<EndpointWatchEvent> publisher = new SubmissionPublisher<>();
     httpClient
         .sendAsync(request, BodyHandlers.ofLines())
-        .whenComplete((r, t) -> {
-          try {
-            if (t != null) {
-              String body = r.body().collect(Collectors.joining(System.lineSeparator()));
-              publisher.closeExceptionally(
-                  new KubernetesDiscoveryException(HTTP, "HTTP call failed: " + body, t));
+        .whenComplete(
+            (r, t) -> {
+              try {
+                if (t != null) {
+                  String body = r.body().collect(Collectors.joining(System.lineSeparator()));
+                  publisher.closeExceptionally(
+                      new KubernetesDiscoveryException(HTTP, "HTTP call failed: " + body, t));
 
-            } else if (r.statusCode() != 200) {
-              String body = r.body().collect(Collectors.joining(System.lineSeparator()));
-              publisher.closeExceptionally(
-                  new KubernetesDiscoveryException(HTTP, "HTTP error response: " + body, null));
+                } else if (r.statusCode() != 200) {
+                  String body = r.body().collect(Collectors.joining(System.lineSeparator()));
+                  publisher.closeExceptionally(
+                      new KubernetesDiscoveryException(HTTP, "HTTP error response: " + body, null));
 
-            } else {
-              r.body().forEach(body -> {
-                try {
-                  publisher.offer(
-                      deserializer.deserializeEndpointEvent(body),
-                      1000L, TimeUnit.MILLISECONDS,
-                      (subscriber, endpointWatchEvent) -> false
-                  );
-                } catch (IOException e) {
-                  publisher.closeExceptionally(new KubernetesDiscoveryException(
-                      HTTP, "Failed to parse the response: " + body, e));
+                } else {
+                  Consumer<String> f =
+                      body -> {
+                        try {
+                          EndpointWatchEvent event = deserializer.deserializeEndpointEvent(body);
+                          publisher.offer(event, 1000L, TimeUnit.MILLISECONDS, (s, ep) -> false);
+
+                        } catch (IOException e) {
+                          publisher.closeExceptionally(
+                              new KubernetesDiscoveryException(
+                                  HTTP, "Failed to parse the response: " + body, e));
+                        }
+                      };
+
+                  r.body().forEach(f);
+                  publisher.close();
                 }
-              });
-              publisher.close();
-            }
-          } catch (Exception e) {
-            publisher.closeExceptionally(new KubernetesDiscoveryException(
-                HTTP, "Unexpected Exception", e));
-          }
-        });
+              } catch (Exception e) {
+                publisher.closeExceptionally(
+                    new KubernetesDiscoveryException(HTTP, "Unexpected Exception", e));
+              }
+            });
 
     return publisher;
   }

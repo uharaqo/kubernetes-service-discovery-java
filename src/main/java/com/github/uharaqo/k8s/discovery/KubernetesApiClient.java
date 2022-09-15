@@ -7,9 +7,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Flow.Publisher;
 import javax.annotation.Nonnull;
 
-/**
- * Main interface to send a request and handle asynchronous responses.
- */
+/** Main interface to send a request and handle asynchronous responses. */
 public interface KubernetesApiClient {
 
   /**
@@ -21,8 +19,8 @@ public interface KubernetesApiClient {
    * @return response
    * @throws KubernetesDiscoveryException exception
    */
-  CompletableFuture<Endpoints> getEndpoints(
-      KubernetesApiClientRequest request) throws KubernetesDiscoveryException;
+  CompletableFuture<Endpoints> getEndpoints(KubernetesApiClientRequest request)
+      throws KubernetesDiscoveryException;
 
   /**
    * Calls <a
@@ -33,30 +31,30 @@ public interface KubernetesApiClient {
    * @return response
    * @throws KubernetesDiscoveryException exception
    */
-  Publisher<EndpointWatchEvent> watch(
-      KubernetesApiClientRequest request) throws KubernetesDiscoveryException;
+  Publisher<EndpointWatchEvent> watch(KubernetesApiClientRequest request)
+      throws KubernetesDiscoveryException;
 
   // TODO: improve
 
   @Nonnull
-  static KubernetesApiClient createDefault(
-      JsonDeserializer jsonDeserializer) throws KubernetesDiscoveryException {
+  static KubernetesApiClient createDefault(JsonDeserializer jsonDeserializer)
+      throws KubernetesDiscoveryException {
     return create(Config.builder().build(), jsonDeserializer);
   }
 
   @Nonnull
-  static KubernetesApiClient create(
-      Config config, JsonDeserializer jsonDeserializer) throws KubernetesDiscoveryException {
+  static KubernetesApiClient create(Config config, JsonDeserializer jsonDeserializer)
+      throws KubernetesDiscoveryException {
     ServiceAccountSslContextProvider sslContextProvider =
         new ServiceAccountSslContextProvider(Config.isPathReadable(config.caCertFilePath));
     return DefaultKubernetesApiClientFactory.createDefault(
         config, jsonDeserializer, sslContextProvider);
   }
 
-//  @Nonnull
-//  static KubernetesApiClient create(
-//      Config config, HttpHandler httpHandler) throws KubernetesDiscoveryException {
-//
-//    return DefaultKubernetesApiClientFactory.create(config, httpHandler);
-//  }
+  //  @Nonnull
+  //  static KubernetesApiClient create(
+  //      Config config, HttpHandler httpHandler) throws KubernetesDiscoveryException {
+  //
+  //    return DefaultKubernetesApiClientFactory.create(config, httpHandler);
+  //  }
 }

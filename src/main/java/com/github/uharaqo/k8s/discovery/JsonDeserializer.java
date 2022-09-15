@@ -5,9 +5,7 @@ import com.github.uharaqo.k8s.discovery.data.Endpoints;
 import java.io.IOException;
 import javax.annotation.Nonnull;
 
-/**
- * Deserialize JSON responses from the API.
- */
+/** Deserialize JSON responses from the API. */
 public interface JsonDeserializer {
 
   @Nonnull

@@ -9,9 +9,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Flow.Publisher;
 import lombok.AllArgsConstructor;
 
-/**
- * The main class that manages the discovery process.
- */
+/** The main class that manages the discovery process. */
 @AllArgsConstructor
 class DefaultKubernetesApiClient implements KubernetesApiClient {
 

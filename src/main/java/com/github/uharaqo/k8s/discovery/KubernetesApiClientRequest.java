@@ -5,8 +5,6 @@ import lombok.Value;
 
 @Value
 public class KubernetesApiClientRequest {
-  @Nonnull
-  public String namespace;
-  @Nonnull
-  public String endpoint;
+  @Nonnull public String namespace;
+  @Nonnull public String endpoint;
 }

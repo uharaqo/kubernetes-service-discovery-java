@@ -20,41 +20,44 @@ public class MockKubeApiServer {
 
   private HttpServer server;
 
-  public void start(
-      Config config, KubernetesApiClientRequest request) throws Exception {
+  public void start(Config config, KubernetesApiClientRequest request) throws Exception {
 
     server =
         HttpServer.create(new InetSocketAddress(config.host, Integer.parseInt(config.port)), 0);
 
     HttpRequestFactory requestFactory = new HttpRequestFactory(config);
 
-    server.createContext(requestFactory.forGet(request).uri().getPath(), exchange -> {
-      OutputStream out = exchange.getResponseBody();
-      byte[] response = mockGetResponse.get().getBytes(UTF_8);
-      exchange.sendResponseHeaders(200, response.length);
-      out.write(response);
-      out.flush();
-      out.close();
-    });
+    server.createContext(
+        requestFactory.forGet(request).uri().getPath(),
+        exchange -> {
+          OutputStream out = exchange.getResponseBody();
+          byte[] response = mockGetResponse.get().getBytes(UTF_8);
+          exchange.sendResponseHeaders(200, response.length);
+          out.write(response);
+          out.flush();
+          out.close();
+        });
 
-    server.createContext(requestFactory.forWatch(request).uri().getPath(), exchange -> {
-      OutputStream out = exchange.getResponseBody();
+    server.createContext(
+        requestFactory.forWatch(request).uri().getPath(),
+        exchange -> {
+          OutputStream out = exchange.getResponseBody();
 
-      exchange.sendResponseHeaders(200, 0);
-      while (isActive.get()) {
-        try {
-          String ev = mockWatchResponses.poll(100, TimeUnit.MILLISECONDS);
-          if (ev != null) {
-            out.write(ev.getBytes(UTF_8));
-            out.write("\r\n".getBytes(UTF_8));
-            out.flush();
+          exchange.sendResponseHeaders(200, 0);
+          while (isActive.get()) {
+            try {
+              String ev = mockWatchResponses.poll(100, TimeUnit.MILLISECONDS);
+              if (ev != null) {
+                out.write(ev.getBytes(UTF_8));
+                out.write("\r\n".getBytes(UTF_8));
+                out.flush();
+              }
+            } catch (Exception e) {
+              throw new RuntimeException(e);
+            }
           }
-        } catch (Exception e) {
-          throw new RuntimeException(e);
-        }
-      }
-      out.close();
-    });
+          out.close();
+        });
 
     server.start();
   }

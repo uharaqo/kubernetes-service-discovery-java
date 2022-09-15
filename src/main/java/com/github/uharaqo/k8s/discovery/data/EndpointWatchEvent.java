@@ -5,8 +5,8 @@ import lombok.NoArgsConstructor;
 
 /**
  * @see <a
- * href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#watchevent-v1-meta">API
- * spec</a>
+ *     href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#watchevent-v1-meta">API
+ *     spec</a>
  */
 @Data
 @NoArgsConstructor
@@ -18,9 +18,7 @@ public class EndpointWatchEvent {
    * @see {@link Type}
    */
   private Type type;
-  /**
-   * Same as the responses for the GET endpoint API.
-   */
+  /** Same as the responses for the GET endpoint API. */
   private Endpoints object;
 
   /**
@@ -34,21 +32,13 @@ public class EndpointWatchEvent {
      * API.
      */
     ADDED,
-    /**
-     * Returned when there's a change including an addition or removal of a pod.
-     */
+    /** Returned when there's a change including an addition or removal of a pod. */
     MODIFIED,
-    /**
-     * Hasn't been observed for the endpoint API.
-     */
+    /** Hasn't been observed for the endpoint API. */
     DELETED,
-    /**
-     * Hasn't been observed for the endpoint API.
-     */
+    /** Hasn't been observed for the endpoint API. */
     BOOKMARK,
-    /**
-     * Hasn't been observed for the endpoint API.
-     */
+    /** Hasn't been observed for the endpoint API. */
     ERROR,
     ;
   }

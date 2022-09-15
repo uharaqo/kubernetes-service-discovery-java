@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.uharaqo.k8s.discovery.data.EndpointWatchEvent;
-import com.github.uharaqo.k8s.discovery.internal.JacksonJsonDeserializer;
 import com.github.uharaqo.k8s.discovery.internal.MockKubeApiServer;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,13 +19,14 @@ public class IntegrationTest {
 
   private Config config =
       Config.builder()
-          .protocol("http").host("127.0.0.1").port("1080")
+          .protocol("http")
+          .host("127.0.0.1")
+          .port("1080")
           .tokenFilePath(getClass().getClassLoader().getResource("token").getFile())
           .caCertFilePath(getClass().getClassLoader().getResource("ca.crt").getFile())
-//          .caCertFilePath("/etc/ssl/cert.pem")
+          //          .caCertFilePath("/etc/ssl/cert.pem")
           .build();
-  private KubernetesApiClientRequest request =
-      new KubernetesApiClientRequest("ns1", "ep1");
+  private KubernetesApiClientRequest request = new KubernetesApiClientRequest("ns1", "ep1");
 
   private KubernetesApiClient client =
       KubernetesApiClient.create(config, new DefaultJsonDeserializer());
@@ -42,8 +42,7 @@ public class IntegrationTest {
       List.of(
           "{\"type\":\"MODIFIED\",\"object\":{\"kind\":\"Endpoints\",\"apiVersion\":\"v1\",\"metadata\":{\"name\":\"ep1\",\"namespace\":\"ns1\",\"uid\":\"161b9670-4f11-412d-b8f8-3150c4827a99\",\"resourceVersion\":\"1022090971\",\"creationTimestamp\":\"2021-06-28T21:10:41Z\",\"labels\":{\"app\":\"app1\"},\"managedFields\":[{\"manager\":\"kube-controller-manager\",\"operation\":\"Update\",\"apiVersion\":\"v1\",\"time\":\"2022-09-14T20:00:20Z\",\"fieldsType\":\"FieldsV1\",\"fieldsV1\":{\"f:metadata\":{\"f:labels\":{\".\":{},\"f:app\":{},\"f:app.kubernetes.io/managed-by\":{},\"f:service.kubernetes.io/headless\":{}}},\"f:subsets\":{}}}]},\"subsets\":[{\"addresses\":[{\"ip\":\"10.0.0.101\",\"nodeName\":\"node1\",\"targetRef\":{\"kind\":\"Pod\",\"namespace\":\"ns1\",\"name\":\"ns1-v20220908233031-app1-7945fdf498-47dtx\",\"uid\":\"db58349a-0ccc-4a3c-8782-5cea25163ef7\",\"resourceVersion\":\"1006548709\"}}],\"ports\":[{\"name\":\"grpc\",\"port\":50051,\"protocol\":\"TCP\"},{\"name\":\"http\",\"port\":8080,\"protocol\":\"TCP\"}]}]}}",
           "{\"type\":\"MODIFIED\",\"object\":{\"kind\":\"Endpoints\",\"apiVersion\":\"v1\",\"metadata\":{\"name\":\"ep1\",\"namespace\":\"ns1\",\"uid\":\"161b9670-4f11-412d-b8f8-3150c4827a99\",\"resourceVersion\":\"1022091052\",\"creationTimestamp\":\"2021-06-28T21:10:41Z\",\"labels\":{\"app\":\"app1\"},\"annotations\":{\"endpoints.kubernetes.io/last-change-trigger-time\":\"2022-09-14T20:00:20Z\"},\"managedFields\":[{\"manager\":\"kube-controller-manager\",\"operation\":\"Update\",\"apiVersion\":\"v1\",\"time\":\"2022-09-14T20:00:21Z\",\"fieldsType\":\"FieldsV1\",\"fieldsV1\":{\"f:metadata\":{\"f:annotations\":{\".\":{},\"f:endpoints.kubernetes.io/last-change-trigger-time\":{}},\"f:labels\":{\".\":{},\"f:app\":{},\"f:app.kubernetes.io/managed-by\":{},\"f:service.kubernetes.io/headless\":{}}},\"f:subsets\":{}}}]},\"subsets\":[{\"addresses\":[{\"ip\":\"10.0.0.101\",\"nodeName\":\"node1\",\"targetRef\":{\"kind\":\"Pod\",\"namespace\":\"ns1\",\"name\":\"ns1-v20220908233031-app1-7945fdf498-47dtx\",\"uid\":\"db58349a-0ccc-4a3c-8782-5cea25163ef7\",\"resourceVersion\":\"1006548709\"}}],\"notReadyAddresses\":[{\"ip\":\"10.0.0.201\",\"nodeName\":\"node2\",\"targetRef\":{\"kind\":\"Pod\",\"namespace\":\"ns1\",\"name\":\"ns1-v20220908233031-app1-7945fdf498-prscr\",\"uid\":\"4e65ed4e-0e36-421d-ae10-8481d12a4c88\",\"resourceVersion\":\"1022091046\"}}],\"ports\":[{\"name\":\"grpc\",\"port\":50051,\"protocol\":\"TCP\"},{\"name\":\"http\",\"port\":8080,\"protocol\":\"TCP\"}]}]}}",
-          "{\"type\":\"MODIFIED\",\"object\":{\"kind\":\"Endpoints\",\"apiVersion\":\"v1\",\"metadata\":{\"name\":\"ep1\",\"namespace\":\"ns1\",\"uid\":\"161b9670-4f11-412d-b8f8-3150c4827a99\",\"resourceVersion\":\"1022092107\",\"creationTimestamp\":\"2021-06-28T21:10:41Z\",\"labels\":{\"app\":\"app1\"},\"annotations\":{\"endpoints.kubernetes.io/last-change-trigger-time\":\"2022-09-14T20:00:54Z\"},\"managedFields\":[{\"manager\":\"kube-controller-manager\",\"operation\":\"Update\",\"apiVersion\":\"v1\",\"time\":\"2022-09-14T20:00:21Z\",\"fieldsType\":\"FieldsV1\",\"fieldsV1\":{\"f:metadata\":{\"f:annotations\":{\".\":{},\"f:endpoints.kubernetes.io/last-change-trigger-time\":{}},\"f:labels\":{\".\":{},\"f:app\":{},\"f:app.kubernetes.io/managed-by\":{},\"f:service.kubernetes.io/headless\":{}}},\"f:subsets\":{}}}]},\"subsets\":[{\"addresses\":[{\"ip\":\"10.0.0.101\",\"nodeName\":\"node1\",\"targetRef\":{\"kind\":\"Pod\",\"namespace\":\"ns1\",\"name\":\"ns1-v20220908233031-app1-7945fdf498-47dtx\",\"uid\":\"db58349a-0ccc-4a3c-8782-5cea25163ef7\",\"resourceVersion\":\"1006548709\"}},{\"ip\":\"10.0.0.201\",\"nodeName\":\"node2\",\"targetRef\":{\"kind\":\"Pod\",\"namespace\":\"ns1\",\"name\":\"ns1-v20220908233031-app1-7945fdf498-prscr\",\"uid\":\"4e65ed4e-0e36-421d-ae10-8481d12a4c88\",\"resourceVersion\":\"1022092100\"}}],\"ports\":[{\"name\":\"grpc\",\"port\":50051,\"protocol\":\"TCP\"},{\"name\":\"http\",\"port\":8080,\"protocol\":\"TCP\"}]}]}}"
-      );
+          "{\"type\":\"MODIFIED\",\"object\":{\"kind\":\"Endpoints\",\"apiVersion\":\"v1\",\"metadata\":{\"name\":\"ep1\",\"namespace\":\"ns1\",\"uid\":\"161b9670-4f11-412d-b8f8-3150c4827a99\",\"resourceVersion\":\"1022092107\",\"creationTimestamp\":\"2021-06-28T21:10:41Z\",\"labels\":{\"app\":\"app1\"},\"annotations\":{\"endpoints.kubernetes.io/last-change-trigger-time\":\"2022-09-14T20:00:54Z\"},\"managedFields\":[{\"manager\":\"kube-controller-manager\",\"operation\":\"Update\",\"apiVersion\":\"v1\",\"time\":\"2022-09-14T20:00:21Z\",\"fieldsType\":\"FieldsV1\",\"fieldsV1\":{\"f:metadata\":{\"f:annotations\":{\".\":{},\"f:endpoints.kubernetes.io/last-change-trigger-time\":{}},\"f:labels\":{\".\":{},\"f:app\":{},\"f:app.kubernetes.io/managed-by\":{},\"f:service.kubernetes.io/headless\":{}}},\"f:subsets\":{}}}]},\"subsets\":[{\"addresses\":[{\"ip\":\"10.0.0.101\",\"nodeName\":\"node1\",\"targetRef\":{\"kind\":\"Pod\",\"namespace\":\"ns1\",\"name\":\"ns1-v20220908233031-app1-7945fdf498-47dtx\",\"uid\":\"db58349a-0ccc-4a3c-8782-5cea25163ef7\",\"resourceVersion\":\"1006548709\"}},{\"ip\":\"10.0.0.201\",\"nodeName\":\"node2\",\"targetRef\":{\"kind\":\"Pod\",\"namespace\":\"ns1\",\"name\":\"ns1-v20220908233031-app1-7945fdf498-prscr\",\"uid\":\"4e65ed4e-0e36-421d-ae10-8481d12a4c88\",\"resourceVersion\":\"1022092100\"}}],\"ports\":[{\"name\":\"grpc\",\"port\":50051,\"protocol\":\"TCP\"},{\"name\":\"http\",\"port\":8080,\"protocol\":\"TCP\"}]}]}}");
 
   @BeforeEach
   void init() throws Exception {
@@ -62,9 +61,22 @@ public class IntegrationTest {
     val endpoint = client.getEndpoints(request).get();
 
     assertEquals(
-        "Endpoints(apiVersion=v1, kind=Endpoints, metadata=ObjectMeta(clusterName=null, creationTimestamp=2021-06-28T21:10:41Z, deletionTimestamp=null, labels={app=app1}, name=ep1, resourceVersion=1022092107, selfLink=null, uid=161b9670-4f11-412d-b8f8-3150c4827a99), subsets=[EndpointSubset(addresses=[EndpointAddress(hostname=null, ip=10.0.0.101, nodeName=node1, targetRef=ObjectReference(apiVersion=null, fieldPath=null, kind=Pod, name=ns1-v20220908233031-app1-7945fdf498-47dtx, namespace=ns1, resourceVersion=1006548709, uid=db58349a-0ccc-4a3c-8782-5cea25163ef7)), EndpointAddress(hostname=null, ip=10.0.0.201, nodeName=node2, targetRef=ObjectReference(apiVersion=null, fieldPath=null, kind=Pod, name=ns1-v20220908233031-app1-7945fdf498-prscr, namespace=ns1, resourceVersion=1022092100, uid=4e65ed4e-0e36-421d-ae10-8481d12a4c88))], notReadyAddresses=null, ports=[EndpointPort(appProtocol=null, name=grpc, port=50051, protocol=TCP), EndpointPort(appProtocol=null, name=http, port=8080, protocol=TCP)])])",
-        endpoint.toString()
-    );
+        "Endpoints(apiVersion=v1, kind=Endpoints, metadata=ObjectMeta(clusterName=null,"
+            + " creationTimestamp=2021-06-28T21:10:41Z, deletionTimestamp=null, labels={app=app1},"
+            + " name=ep1, resourceVersion=1022092107, selfLink=null,"
+            + " uid=161b9670-4f11-412d-b8f8-3150c4827a99),"
+            + " subsets=[EndpointSubset(addresses=[EndpointAddress(hostname=null, ip=10.0.0.101,"
+            + " nodeName=node1, targetRef=ObjectReference(apiVersion=null, fieldPath=null,"
+            + " kind=Pod, name=ns1-v20220908233031-app1-7945fdf498-47dtx, namespace=ns1,"
+            + " resourceVersion=1006548709, uid=db58349a-0ccc-4a3c-8782-5cea25163ef7)),"
+            + " EndpointAddress(hostname=null, ip=10.0.0.201, nodeName=node2,"
+            + " targetRef=ObjectReference(apiVersion=null, fieldPath=null, kind=Pod,"
+            + " name=ns1-v20220908233031-app1-7945fdf498-prscr, namespace=ns1,"
+            + " resourceVersion=1022092100, uid=4e65ed4e-0e36-421d-ae10-8481d12a4c88))],"
+            + " notReadyAddresses=null, ports=[EndpointPort(appProtocol=null, name=grpc,"
+            + " port=50051, protocol=TCP), EndpointPort(appProtocol=null, name=http, port=8080,"
+            + " protocol=TCP)])])",
+        endpoint.toString());
   }
 
   @Test
@@ -74,8 +86,7 @@ public class IntegrationTest {
 
     LinkedBlockingQueue<EndpointWatchEvent> q = new LinkedBlockingQueue<>();
 
-    client.watch(request)
-        .subscribe(new EndpointWatchEventSubscriber(q));
+    client.watch(request).subscribe(new EndpointWatchEventSubscriber(q));
 
     List<EndpointWatchEvent> l1 = waitForEvents(q, 4);
     assertEquals(4, l1.size(), "Couldn't receive all expected events");

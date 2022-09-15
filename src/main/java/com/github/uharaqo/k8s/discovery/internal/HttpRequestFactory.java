@@ -16,9 +16,7 @@ import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.function.Supplier;
 
-/**
- * Generate a request based on the given {@link Config} and {@link KubernetesApiClientRequest}.
- */
+/** Generate a request based on the given {@link Config} and {@link KubernetesApiClientRequest}. */
 public class HttpRequestFactory {
 
   private final URI nameSpacesBaseUri;
@@ -34,18 +32,27 @@ public class HttpRequestFactory {
   }
 
   public HttpRequest forGet(KubernetesApiClientRequest request) {
-    return newRequest(() -> resolveUrl(
-        nameSpacesBaseUri, "%s/endpoints/%s?pretty=false&timeoutSeconds=%s",
-        request.namespace, request.endpoint, String.valueOf(getTimeoutSec)
-    ), getTimeoutSec);
+    return newRequest(
+        () ->
+            resolveUrl(
+                nameSpacesBaseUri,
+                "%s/endpoints/%s?pretty=false&timeoutSeconds=%s",
+                request.namespace,
+                request.endpoint,
+                String.valueOf(getTimeoutSec)),
+        getTimeoutSec);
   }
 
   public HttpRequest forWatch(KubernetesApiClientRequest request) {
-    return newRequest(() -> resolveUrl(
-        nameSpacesBaseUri,
-        "%s/endpoints?watch=true&fieldSelector=metadata.name=%s&timeoutSeconds=%s",
-        request.namespace, request.endpoint, String.valueOf(watchTimeoutSec)
-    ), watchTimeoutSec);
+    return newRequest(
+        () ->
+            resolveUrl(
+                nameSpacesBaseUri,
+                "%s/endpoints?watch=true&fieldSelector=metadata.name=%s&timeoutSeconds=%s",
+                request.namespace,
+                request.endpoint,
+                String.valueOf(watchTimeoutSec)),
+        watchTimeoutSec);
   }
 
   private HttpRequest newRequest(Supplier<URI> uri, int timeoutSec) {
@@ -84,9 +91,11 @@ public class HttpRequestFactory {
 
   private static String[] getHeaders(Path tokenFilePath) {
     try {
-      return new String[]{
-          "Authorization", "Bearer " + Files.readString(tokenFilePath),
-          "User-Agent", "KubernetesServiceDiscovery",
+      return new String[] {
+        "Authorization",
+        "Bearer " + Files.readString(tokenFilePath),
+        "User-Agent",
+        "KubernetesServiceDiscovery",
       };
 
     } catch (IOException e) {

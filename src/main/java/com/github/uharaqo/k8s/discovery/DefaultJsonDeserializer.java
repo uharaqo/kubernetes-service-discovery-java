@@ -8,8 +8,7 @@ import javax.annotation.Nonnull;
 
 /**
  * JSON-B implementation of the {@link JsonDeserializer}. To use this class, include a library that
- * implements JSON-B such as <a
- * href="https://projects.eclipse.org/projects/ee4j.yasson">yaason</a>.
+ * implements JSON-B such as <a href="https://projects.eclipse.org/projects/ee4j.yasson">yaason</a>.
  */
 public class DefaultJsonDeserializer implements JsonDeserializer {
 

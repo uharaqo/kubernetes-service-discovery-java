@@ -32,8 +32,8 @@ public class ServiceAccountSslContextProvider implements SslContextProvider {
       return newSslContext(caCert);
 
     } catch (IOException e) {
-      throw new KubernetesDiscoveryException(SSL_CONTEXT_PROVIDER,
-          "Failed to read ca certificate file: " + caCertFile, e);
+      throw new KubernetesDiscoveryException(
+          SSL_CONTEXT_PROVIDER, "Failed to read ca certificate file: " + caCertFile, e);
     }
   }
 
