@@ -1,6 +1,7 @@
 package com.github.uharaqo.k8s.discovery.internal;
 
 import com.github.uharaqo.k8s.discovery.HttpHandler;
+import com.github.uharaqo.k8s.discovery.HttpRequestFactory;
 import com.github.uharaqo.k8s.discovery.KubernetesApiClient;
 import com.github.uharaqo.k8s.discovery.KubernetesApiClientRequest;
 import com.github.uharaqo.k8s.discovery.data.EndpointWatchEvent;

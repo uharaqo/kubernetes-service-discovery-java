@@ -1,12 +1,9 @@
-package com.github.uharaqo.k8s.discovery.internal;
+package com.github.uharaqo.k8s.discovery;
 
 import static com.github.uharaqo.k8s.discovery.KubernetesDiscoveryException.ErrorCause.HTTP_REQUEST_FACTORY;
 import static com.github.uharaqo.k8s.discovery.KubernetesDiscoveryException.ErrorCause.SSL_CONTEXT_PROVIDER;
 import static java.lang.String.format;
 
-import com.github.uharaqo.k8s.discovery.Config;
-import com.github.uharaqo.k8s.discovery.KubernetesApiClientRequest;
-import com.github.uharaqo.k8s.discovery.KubernetesDiscoveryException;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpRequest;
@@ -17,7 +14,7 @@ import java.time.Duration;
 import java.util.function.Supplier;
 
 /** Generate a request based on the given {@link Config} and {@link KubernetesApiClientRequest}. */
-public class HttpRequestFactory {
+public final class HttpRequestFactory {
 
   private final URI nameSpacesBaseUri;
   private final Path tokenFilePath;

@@ -17,7 +17,7 @@ import java.util.Collection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
 
-public class ServiceAccountSslContextProvider implements SslContextProvider {
+public final class ServiceAccountSslContextProvider implements SslContextProvider {
 
   private final Path caCertFile;
 

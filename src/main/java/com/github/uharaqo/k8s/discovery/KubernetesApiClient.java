@@ -44,16 +44,16 @@ public interface KubernetesApiClient {
   @Nonnull
   static KubernetesApiClient create(Config config, JsonDeserializer jsonDeserializer)
       throws KubernetesDiscoveryException {
-    return DefaultKubernetesApiClientFactory.createDefault(
-        config,
-        jsonDeserializer,
-        new ServiceAccountSslContextProvider(Config.getPath(config.caCertFilePath)));
+    ServiceAccountSslContextProvider sslContextProvider =
+        new ServiceAccountSslContextProvider(Config.getPath(config.caCertFilePath));
+    return create(config, jsonDeserializer, sslContextProvider);
   }
 
-  //  @Nonnull
-  //  static KubernetesApiClient create(
-  //      Config config, HttpHandler httpHandler) throws KubernetesDiscoveryException {
-  //
-  //    return DefaultKubernetesApiClientFactory.create(config, httpHandler);
-  //  }
+  @Nonnull
+  static KubernetesApiClient create(
+      Config config, JsonDeserializer jsonDeserializer, SslContextProvider sslContextProvider)
+      throws KubernetesDiscoveryException {
+    return DefaultKubernetesApiClientFactory.createDefault(
+        config, jsonDeserializer, sslContextProvider);
+  }
 }

@@ -25,7 +25,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 
-public class DefaultHttpHandler implements HttpHandler {
+class DefaultHttpHandler implements HttpHandler {
 
   private final JsonDeserializer deserializer;
   private final HttpClient httpClient;

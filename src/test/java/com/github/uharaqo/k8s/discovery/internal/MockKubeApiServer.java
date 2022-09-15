@@ -3,6 +3,7 @@ package com.github.uharaqo.k8s.discovery.internal;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import com.github.uharaqo.k8s.discovery.Config;
+import com.github.uharaqo.k8s.discovery.HttpRequestFactory;
 import com.github.uharaqo.k8s.discovery.KubernetesApiClientRequest;
 import com.sun.net.httpserver.HttpServer;
 import java.io.OutputStream;
