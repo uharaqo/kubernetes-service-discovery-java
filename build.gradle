@@ -21,10 +21,20 @@ configurations {
 }
 
 dependencies {
-  compileOnly 'org.projectlombok:lombok:1.18.24'
+  // util
+  implementation 'com.google.code.findbugs:jsr305:3.0.2'
+  implementation 'jakarta.json.bind:jakarta.json.bind-api:3.0.0'
 
+  // lombok
+  compileOnly 'org.projectlombok:lombok:1.18.24'
+  annotationProcessor 'org.projectlombok:lombok:1.18.24'
+  testCompileOnly 'org.projectlombok:lombok:1.18.24'
+  testAnnotationProcessor 'org.projectlombok:lombok:1.18.24'
+
+  // test
   testImplementation platform('org.junit:junit-bom:5.9.0')
   testImplementation 'org.junit.jupiter:junit-jupiter'
+  testImplementation 'org.eclipse:yasson:3.0.2'
 }
 
 jacoco {
