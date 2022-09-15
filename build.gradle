@@ -18,8 +18,8 @@ repositories {
   mavenCentral()
 }
 
-task sourceJar(type: Jar) {
-  from sourceSets.main.allJava
+java {
+  withSourcesJar()
 }
 
 configurations {
@@ -77,9 +77,6 @@ publishing {
   publications {
     mavenJava(MavenPublication) {
       from(components.java)
-      artifact sourceJar {
-        classifier "sources"
-      }
       pom {
         name = 'kubernetes-service-discovery-java'
         description = 'Kubernetes Service Discovery Library'

@@ -11,6 +11,17 @@ targetCompatibility = 11
 application {
     mainClass = 'com.github.uharaqo.k8s.discovery.App'
 }
+jar {
+    manifest {
+        attributes(
+                'Main-Class': 'com.github.uharaqo.k8s.discovery.App'
+        )
+    }
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    duplicatesStrategy = 'WARN'
+}
 
 repositories {
     mavenLocal()
