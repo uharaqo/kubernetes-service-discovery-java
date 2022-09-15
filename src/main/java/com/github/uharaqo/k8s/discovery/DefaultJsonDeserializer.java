@@ -4,6 +4,8 @@ import com.github.uharaqo.k8s.discovery.data.EndpointWatchEvent;
 import com.github.uharaqo.k8s.discovery.data.Endpoints;
 import jakarta.json.bind.Jsonb;
 import jakarta.json.bind.JsonbBuilder;
+import jakarta.json.bind.JsonbConfig;
+import jakarta.json.bind.config.PropertyOrderStrategy;
 import javax.annotation.Nonnull;
 
 /**
@@ -12,7 +14,11 @@ import javax.annotation.Nonnull;
  */
 public class DefaultJsonDeserializer implements JsonDeserializer {
 
-  private final Jsonb jsonb = JsonbBuilder.create();
+  private final Jsonb jsonb =
+      JsonbBuilder.create(
+          new JsonbConfig()
+              .withNullValues(false)
+              .withPropertyOrderStrategy(PropertyOrderStrategy.LEXICOGRAPHICAL));
 
   @Nonnull
   @Override

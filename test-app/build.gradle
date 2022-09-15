@@ -1,0 +1,24 @@
+plugins {
+    id 'application'
+}
+
+group 'com.github.uharaqo.k8s.discovery'
+version '0.0.1-SNAPSHOT'
+
+sourceCompatibility = 11
+targetCompatibility = 11
+
+application {
+    mainClass = 'com.github.uharaqo.k8s.discovery.App'
+}
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'com.github.uharaqo.k8s.discovery:kubernetes-service-discovery-java:' + this.version
+//    implementation 'jakarta.json.bind:jakarta.json.bind-api:3.0.0'
+    implementation 'org.eclipse:yasson:3.0.2'
+}

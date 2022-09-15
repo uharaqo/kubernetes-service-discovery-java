@@ -37,18 +37,17 @@ public interface KubernetesApiClient {
   // TODO: improve
 
   @Nonnull
-  static KubernetesApiClient createDefault(JsonDeserializer jsonDeserializer)
-      throws KubernetesDiscoveryException {
-    return create(Config.builder().build(), jsonDeserializer);
+  static KubernetesApiClient createDefault() throws KubernetesDiscoveryException {
+    return create(Config.builder().build(), new DefaultJsonDeserializer());
   }
 
   @Nonnull
   static KubernetesApiClient create(Config config, JsonDeserializer jsonDeserializer)
       throws KubernetesDiscoveryException {
-    ServiceAccountSslContextProvider sslContextProvider =
-        new ServiceAccountSslContextProvider(Config.isPathReadable(config.caCertFilePath));
     return DefaultKubernetesApiClientFactory.createDefault(
-        config, jsonDeserializer, sslContextProvider);
+        config,
+        jsonDeserializer,
+        new ServiceAccountSslContextProvider(Config.getPath(config.caCertFilePath)));
   }
 
   //  @Nonnull

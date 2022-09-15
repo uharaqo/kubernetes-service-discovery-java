@@ -14,7 +14,12 @@ sourceCompatibility = 11
 targetCompatibility = 11
 
 repositories {
+  mavenLocal()
   mavenCentral()
+}
+
+task sourceJar(type: Jar) {
+  from sourceSets.main.allJava
 }
 
 configurations {
@@ -42,7 +47,7 @@ jacoco {
 }
 jacocoTestReport {
   reports {
-    csv.enabled = true
+    csv.required = true
   }
 }
 
@@ -52,7 +57,7 @@ test {
 
 spotless {
   // optional: limit format enforcement to just the files changed by this feature branch
-//    ratchetFrom 'origin/main'
+  ratchetFrom 'origin/main'
 
   format 'misc', {
     // define the files to apply `misc` to
@@ -75,6 +80,9 @@ publishing {
   publications {
     mavenJava(MavenPublication) {
       from(components.java)
+      artifact sourceJar {
+        classifier "sources"
+      }
       pom {
         name = 'kubernetes-service-discovery-java'
         description = 'Kubernetes Service Discovery Library'
@@ -119,9 +127,9 @@ publishing {
 //  }
 }
 
-signing {
-  def signingKey = findProperty("signingKey")
-  def signingPassword = findProperty("signingPassword")
-  useInMemoryPgpKeys(signingKey, signingPassword)
-  sign publishing.publications.mavenJava
-}
+//signing {
+//  def signingKey = findProperty("signingKey")
+//  def signingPassword = findProperty("signingPassword")
+//  useInMemoryPgpKeys(signingKey, signingPassword)
+//  sign publishing.publications.mavenJava
+//}

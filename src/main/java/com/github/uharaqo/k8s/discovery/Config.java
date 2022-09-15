@@ -53,7 +53,7 @@ public final class Config {
   @Nonnull @Default
   public final String tokenFilePath = "/var/run/secrets/kubernetes.io/serviceaccount/token";
 
-  public static Path isPathReadable(String path) {
+  public static Path getPath(String path) {
     try {
       Path p = Paths.get(path);
       if (!Files.isReadable(p)) {
