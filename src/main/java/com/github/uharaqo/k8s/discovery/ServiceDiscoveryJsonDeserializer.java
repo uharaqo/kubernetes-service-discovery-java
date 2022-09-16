@@ -6,7 +6,7 @@ import java.io.IOException;
 import javax.annotation.Nonnull;
 
 /** Deserialize JSON responses from the API. */
-public interface JsonDeserializer {
+public interface ServiceDiscoveryJsonDeserializer {
 
   @Nonnull
   Endpoints deserializeEndpoints(String body) throws IOException;

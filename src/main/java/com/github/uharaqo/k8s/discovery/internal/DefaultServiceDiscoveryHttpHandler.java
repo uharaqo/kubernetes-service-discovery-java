@@ -1,19 +1,18 @@
 package com.github.uharaqo.k8s.discovery.internal;
 
-import static com.github.uharaqo.k8s.discovery.KubernetesDiscoveryException.ErrorCause.HTTP;
-import static com.github.uharaqo.k8s.discovery.KubernetesDiscoveryException.ErrorCause.SSL_CONTEXT_PROVIDER;
+import static com.github.uharaqo.k8s.discovery.ServiceDiscoveryException.ErrorCause.HTTP;
+import static com.github.uharaqo.k8s.discovery.ServiceDiscoveryException.ErrorCause.SSL_CONTEXT_PROVIDER;
 import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-import com.github.uharaqo.k8s.discovery.HttpHandler;
-import com.github.uharaqo.k8s.discovery.JsonDeserializer;
-import com.github.uharaqo.k8s.discovery.KubernetesDiscoveryException;
+import com.github.uharaqo.k8s.discovery.ServiceDiscoveryException;
+import com.github.uharaqo.k8s.discovery.ServiceDiscoveryHttpHandler;
+import com.github.uharaqo.k8s.discovery.ServiceDiscoveryJsonDeserializer;
 import com.github.uharaqo.k8s.discovery.SslContextProvider;
 import com.github.uharaqo.k8s.discovery.data.EndpointWatchEvent;
 import com.github.uharaqo.k8s.discovery.data.Endpoints;
 import java.io.IOException;
 import java.net.http.HttpClient;
-import java.net.http.HttpClient.Builder;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.time.Duration;
@@ -24,31 +23,35 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
+import javax.net.ssl.SSLContext;
 
-public final class DefaultHttpHandler implements HttpHandler {
+public final class DefaultServiceDiscoveryHttpHandler implements ServiceDiscoveryHttpHandler {
 
-  private final JsonDeserializer deserializer;
+  private final ServiceDiscoveryJsonDeserializer deserializer;
   private final HttpClient httpClient;
 
-  public DefaultHttpHandler(
-      String protocol,
-      JsonDeserializer deserializer,
+  public DefaultServiceDiscoveryHttpHandler(
       SslContextProvider sslContextProvider,
+      ServiceDiscoveryJsonDeserializer deserializer,
       Duration connectTimeout) {
 
-    this.deserializer = deserializer;
-    Builder builder = HttpClient.newBuilder();
-    if ("https".equals(protocol)) {
-      try {
-        builder.sslContext(sslContextProvider.create());
-      } catch (KubernetesDiscoveryException e) {
-        throw e;
-      } catch (Exception e) {
-        throw new KubernetesDiscoveryException(
-            SSL_CONTEXT_PROVIDER, "Failed to create SSLContext", e);
-      }
+    HttpClient.Builder builder = HttpClient.newBuilder();
+    SSLContext sslContext = newSslContext(sslContextProvider);
+    if (sslContext != null) {
+      builder.sslContext(sslContext);
     }
     httpClient = builder.connectTimeout(connectTimeout).build();
+    this.deserializer = deserializer;
+  }
+
+  private static SSLContext newSslContext(SslContextProvider sslContextProvider) {
+    try {
+      return sslContextProvider.create();
+    } catch (ServiceDiscoveryException e) {
+      throw e;
+    } catch (Exception e) {
+      throw new ServiceDiscoveryException(SSL_CONTEXT_PROVIDER, "Failed to create SSLContext", e);
+    }
   }
 
   @Nonnull
@@ -68,12 +71,14 @@ public final class DefaultHttpHandler implements HttpHandler {
                   // TODO can't continue
                 }
 
-                throw new KubernetesDiscoveryException(
+                throw new ServiceDiscoveryException(
                     HTTP,
                     format("HTTP Error Response. status: %d, body: %s", statusCode, body),
                     null);
-              } catch (IOException e) {
-                throw new KubernetesDiscoveryException(HTTP, "HTTP call failed", e);
+              } catch (ServiceDiscoveryException e) {
+                throw e;
+              } catch (Exception e) {
+                throw new ServiceDiscoveryException(HTTP, "HTTP call failed", e);
               }
             });
   }
@@ -89,17 +94,18 @@ public final class DefaultHttpHandler implements HttpHandler {
             (r, t) -> {
               try {
                 if (t != null) {
-                  String body = r.body().collect(Collectors.joining(System.lineSeparator()));
                   publisher.closeExceptionally(
-                      new KubernetesDiscoveryException(HTTP, "HTTP call failed: " + body, t));
+                      new ServiceDiscoveryException(HTTP, "HTTP call failed", t));
 
                   //                } else if (r.statusCode() == 403) {
                   // TODO can't continue
 
                 } else if (r.statusCode() != 200) {
-                  String body = r.body().collect(Collectors.joining(System.lineSeparator()));
+                  String body =
+                      r != null && r.body() != null
+                          ? r.body().collect(Collectors.joining(System.lineSeparator())) : "";
                   publisher.closeExceptionally(
-                      new KubernetesDiscoveryException(HTTP, "HTTP error response: " + body, null));
+                      new ServiceDiscoveryException(HTTP, "HTTP error response: " + body, null));
 
                 } else {
                   Consumer<String> f =
@@ -108,9 +114,9 @@ public final class DefaultHttpHandler implements HttpHandler {
                           EndpointWatchEvent event = deserializer.deserializeEndpointEvent(body);
                           publisher.offer(event, 1000L, TimeUnit.MILLISECONDS, (s, ep) -> false);
 
-                        } catch (IOException e) {
+                        } catch (Exception e) {
                           publisher.closeExceptionally(
-                              new KubernetesDiscoveryException(
+                              new ServiceDiscoveryException(
                                   HTTP, "Failed to parse the response: " + body, e));
                         }
                       };
@@ -120,7 +126,7 @@ public final class DefaultHttpHandler implements HttpHandler {
                 }
               } catch (Exception e) {
                 publisher.closeExceptionally(
-                    new KubernetesDiscoveryException(HTTP, "Unexpected Exception", e));
+                    new ServiceDiscoveryException(HTTP, "Unexpected Exception", e));
               }
             });
 

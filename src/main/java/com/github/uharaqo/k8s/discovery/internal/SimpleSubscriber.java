@@ -1,4 +1,4 @@
-package com.github.uharaqo.k8s.discovery;
+package com.github.uharaqo.k8s.discovery.internal;
 
 import java.util.concurrent.Flow.Subscriber;
 import java.util.concurrent.Flow.Subscription;

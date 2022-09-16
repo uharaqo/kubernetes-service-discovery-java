@@ -12,7 +12,7 @@ import javax.annotation.Nonnull;
  *     href="https://kubernetes.io/docs/reference/kubernetes-api/service-resources/endpoints-v1/#get-read-the-specified-endpoints">the
  *     official document:</a>
  */
-public interface HttpHandler {
+public interface ServiceDiscoveryHttpHandler {
 
   @Nonnull
   CompletableFuture<Endpoints> getEndpoints(HttpRequest request);

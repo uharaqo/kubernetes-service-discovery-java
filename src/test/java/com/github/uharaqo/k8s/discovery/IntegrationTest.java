@@ -3,6 +3,7 @@ package com.github.uharaqo.k8s.discovery;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.github.uharaqo.k8s.discovery.data.EndpointWatchEvent;
+import com.github.uharaqo.k8s.discovery.internal.DefaultServiceDiscoveryHttpRequestFactory;
 import com.github.uharaqo.k8s.discovery.internal.MockKubeApiServer;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,19 +17,22 @@ import org.junit.jupiter.api.Test;
 
 public class IntegrationTest {
 
-  private Config config =
-      Config.builder()
-          .protocol("http")
-          .host("127.0.0.1")
-          .port("1080")
-          .tokenFilePath(getClass().getClassLoader().getResource("token").getFile())
-          .caCertFilePath(getClass().getClassLoader().getResource("ca.crt").getFile())
-          //          .caCertFilePath("/etc/ssl/cert.pem")
-          .build();
-  private KubernetesApiClientRequest request = new KubernetesApiClientRequest("ns1", "ep1");
+  private final ServiceDiscoveryRequest request = new ServiceDiscoveryRequest("ns1", "ep1");
 
-  private KubernetesApiClient client =
-      KubernetesApiClient.create(config, new DefaultJsonDeserializer());
+  private final DefaultServiceDiscoveryHttpRequestFactory requestFactory =
+      new DefaultServiceDiscoveryHttpRequestFactory(
+          "http",
+          "127.0.0.1",
+          "1080",
+          getClass().getClassLoader().getResource("token").getPath().toString(),
+          5,
+          60);
+  private KubernetesServiceDiscovery client =
+      KubernetesServiceDiscovery.builder()
+          .withHttpRequestFactory(requestFactory)
+          .withSslContextProvider(SslContextProvider.noOp())
+          .build();
+
   private MockKubeApiServer mockServer;
 
   private String mockGetResponse =
@@ -46,7 +50,7 @@ public class IntegrationTest {
   void init() throws Exception {
     mockServer = new MockKubeApiServer();
     mockServer.setMockGetResponse(mockGetResponse);
-    mockServer.start(config, request);
+    mockServer.start(requestFactory, request);
   }
 
   @AfterEach
@@ -84,7 +88,7 @@ public class IntegrationTest {
 
     LinkedBlockingQueue<EndpointWatchEvent> q = new LinkedBlockingQueue<>();
 
-    client.watchEndpoints(request).subscribe(new EndpointWatchEventSubscriber(q));
+    client.watchChanges(request).subscribe(new EndpointWatchEventSubscriber(q));
 
     List<EndpointWatchEvent> l1 = waitForEvents(q, 4);
     assertEquals(4, l1.size(), "Couldn't receive all expected events");

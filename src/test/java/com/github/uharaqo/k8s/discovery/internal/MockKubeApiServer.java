@@ -2,9 +2,8 @@ package com.github.uharaqo.k8s.discovery.internal;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-import com.github.uharaqo.k8s.discovery.Config;
-import com.github.uharaqo.k8s.discovery.HttpRequestFactory;
-import com.github.uharaqo.k8s.discovery.KubernetesApiClientRequest;
+import com.github.uharaqo.k8s.discovery.ServiceDiscoveryHttpRequestFactory;
+import com.github.uharaqo.k8s.discovery.ServiceDiscoveryRequest;
 import com.sun.net.httpserver.HttpServer;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
@@ -21,12 +20,11 @@ public class MockKubeApiServer {
 
   private HttpServer server;
 
-  public void start(Config config, KubernetesApiClientRequest request) throws Exception {
+  public void start(
+      ServiceDiscoveryHttpRequestFactory requestFactory, ServiceDiscoveryRequest request)
+      throws Exception {
 
-    server =
-        HttpServer.create(new InetSocketAddress(config.host, Integer.parseInt(config.port)), 0);
-
-    HttpRequestFactory requestFactory = new HttpRequestFactory(config);
+    server = HttpServer.create(new InetSocketAddress("127.0.0.1", 1080), 0);
 
     server.createContext(
         requestFactory.forGet(request).uri().getPath(),

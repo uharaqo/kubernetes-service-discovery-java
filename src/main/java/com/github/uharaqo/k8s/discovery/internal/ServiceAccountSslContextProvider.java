@@ -1,7 +1,9 @@
-package com.github.uharaqo.k8s.discovery;
+package com.github.uharaqo.k8s.discovery.internal;
 
-import static com.github.uharaqo.k8s.discovery.KubernetesDiscoveryException.ErrorCause.SSL_CONTEXT_PROVIDER;
+import static com.github.uharaqo.k8s.discovery.ServiceDiscoveryException.ErrorCause.SSL_CONTEXT_PROVIDER;
 
+import com.github.uharaqo.k8s.discovery.ServiceDiscoveryException;
+import com.github.uharaqo.k8s.discovery.SslContextProvider;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -19,21 +21,30 @@ import javax.net.ssl.TrustManagerFactory;
 
 public final class ServiceAccountSslContextProvider implements SslContextProvider {
 
-  private final Path caCertFile;
+  private final Path caCertFilePath;
 
-  public ServiceAccountSslContextProvider(Path caCertFile) {
-    this.caCertFile = caCertFile;
+  public ServiceAccountSslContextProvider() {
+    this("/var/run/secrets/kubernetes.io/serviceaccount/ca.crt");
+  }
+
+  /**
+   * Constructor
+   *
+   * @param caCertFilePath CA certificate file for the Kubernetes API. Default: "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt"
+   */
+  public ServiceAccountSslContextProvider(String caCertFilePath) {
+    this.caCertFilePath = Utils.toPath(caCertFilePath);
   }
 
   @Override
   public SSLContext create() {
     try {
-      byte[] caCert = Files.readAllBytes(caCertFile);
+      byte[] caCert = Files.readAllBytes(caCertFilePath);
       return newSslContext(caCert);
 
     } catch (IOException e) {
-      throw new KubernetesDiscoveryException(
-          SSL_CONTEXT_PROVIDER, "Failed to read ca certificate file: " + caCertFile, e);
+      throw new ServiceDiscoveryException(
+          SSL_CONTEXT_PROVIDER, "Failed to read ca certificate file: " + caCertFilePath, e);
     }
   }
 
@@ -49,8 +60,7 @@ public final class ServiceAccountSslContextProvider implements SslContextProvide
 
       return ctx;
     } catch (Exception e) {
-      throw new KubernetesDiscoveryException(
-          SSL_CONTEXT_PROVIDER, "Failed to create SSLContext", e);
+      throw new ServiceDiscoveryException(SSL_CONTEXT_PROVIDER, "Failed to create SSLContext", e);
     }
   }
 
