@@ -7,7 +7,7 @@ import java.util.concurrent.Flow.Publisher;
 import javax.annotation.Nonnull;
 
 /** Main interface to send a request and handle asynchronous responses. */
-public interface KubernetesServiceDiscovery {
+public interface KubernetesServiceDiscovery extends AutoCloseable {
 
   /**
    * Calls <a

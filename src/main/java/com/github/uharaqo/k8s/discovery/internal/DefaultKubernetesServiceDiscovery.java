@@ -26,4 +26,9 @@ public final class DefaultKubernetesServiceDiscovery implements KubernetesServic
   public Publisher<EndpointWatchEvent> watchChanges(ServiceDiscoveryRequest request) {
     return http.watchEndpoints(factory.forWatch(request));
   }
+
+  @Override
+  public void close() throws Exception {
+    http.close();
+  }
 }

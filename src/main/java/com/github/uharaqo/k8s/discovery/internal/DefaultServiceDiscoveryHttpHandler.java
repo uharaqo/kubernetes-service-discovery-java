@@ -132,4 +132,9 @@ public final class DefaultServiceDiscoveryHttpHandler implements ServiceDiscover
 
     return publisher;
   }
+
+  @Override
+  public void close() {
+    // no need to shutdown the HttpClient
+  }
 }
