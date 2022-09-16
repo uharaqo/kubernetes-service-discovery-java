@@ -1,0 +1,7 @@
+group 'com.github.uharaqo.k8s.discovery'
+version '0.0.1-SNAPSHOT'
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}

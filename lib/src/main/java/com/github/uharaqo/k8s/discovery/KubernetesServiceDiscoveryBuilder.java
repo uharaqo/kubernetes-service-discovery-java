@@ -34,7 +34,7 @@ public final class KubernetesServiceDiscoveryBuilder {
   }
 
   @Nonnull
-  public KubernetesServiceDiscoveryBuilder withServiceDiscoveryHttpHandlerFactory(
+  public KubernetesServiceDiscoveryBuilder withHttpHandlerFactory(
       ServiceDiscoveryHttpHandlerFactory httpHandlerFactory) {
     this.httpHandlerFactory = httpHandlerFactory;
     return this;

@@ -3,23 +3,26 @@ package com.github.uharaqo.k8s.discovery;
 import com.github.uharaqo.k8s.discovery.data.EndpointExtractor;
 import com.github.uharaqo.k8s.discovery.data.EndpointWatchEvent;
 import com.github.uharaqo.k8s.discovery.data.Endpoints;
-import com.github.uharaqo.k8s.discovery.internal.DefaultHttpHandlerFactory;
-import com.github.uharaqo.k8s.discovery.internal.DefaultKubernetesApiClientFactory;
+import com.github.uharaqo.k8s.discovery.internal.DefaultServiceDiscoveryHttpHandler;
+import com.github.uharaqo.k8s.discovery.internal.SimpleSubscriber;
 import jakarta.json.bind.Jsonb;
 import jakarta.json.bind.JsonbBuilder;
 import jakarta.json.bind.JsonbConfig;
 import jakarta.json.bind.config.PropertyOrderStrategy;
 import java.net.http.HttpRequest;
+import java.time.Duration;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Flow.Publisher;
 import java.util.concurrent.TimeUnit;
+import javax.annotation.Nonnull;
 
 public class App {
 
   public static void main(String[] args) throws InterruptedException {
-    String namespace = System.getProperty("namespace");
-    String endpoint = System.getProperty("endpoint");
+    String namespace = System.getProperty("namespace", "CHANGEME_NS");
+    String endpoint = System.getProperty("endpoint", "CHANGEME_EP");
     String command = System.getProperty("command");
     long watchTimeout = Long.valueOf(System.getProperty("timeout", "5"));
     int watchPort = Integer.valueOf(System.getProperty("port", "-1"));
@@ -30,54 +33,29 @@ public class App {
     System.out.println(watchTimeout);
     System.out.println(watchPort);
 
-    Config config = Config.builder().watchTimeoutSec((int) watchTimeout).build();
-    ServiceAccountSslContextProvider sslContextProvider =
-        new ServiceAccountSslContextProvider(Config.getPath(config.caCertFilePath));
-    DefaultJsonDeserializer deserializer = new DefaultJsonDeserializer();
-    HttpRequestFactory requestFactory = new HttpRequestFactory(config);
-    DefaultHttpHandlerFactory original = new DefaultHttpHandlerFactory();
-    HttpHandlerFactory handlerFactory = new HttpHandlerFactory() {
-      @Override
-      public HttpHandler create(
-          Config config, SslContextProvider sslContextProvider, JsonDeserializer deserializer) {
-        HttpHandler v = original.create(config, sslContextProvider, deserializer);
-        return new HttpHandler() {
-          @Override
-          public CompletableFuture<Endpoints> getEndpoints(HttpRequest request) {
-            System.out.println("Request: " + request);
-            return v.getEndpoints(request)
-                .whenComplete((r, t) -> System.out.println("done4"));
-          }
+    System.out.println(JsonbBuilder.create().toJson(Map.of("k", "v")));
 
-          @Override
-          public Publisher<EndpointWatchEvent> watchEndpoints(HttpRequest request) {
-            System.out.println("Request: " + request);
-            return v.watchEndpoints(request);
-          }
-        };
-      }
-    };
+    KubernetesServiceDiscovery discovery =
+        KubernetesServiceDiscovery.builder()
+            .withHttpHandlerFactory(new CustomHttpHandlerFactory(Duration.ofSeconds(watchTimeout)))
+            .build();
 
-    KubernetesApiClient ksd =
-        DefaultKubernetesApiClientFactory.create(
-            requestFactory, handlerFactory, config, deserializer, sslContextProvider);
+    ServiceDiscoveryRequest request = new ServiceDiscoveryRequest(namespace, endpoint);
 
-    KubernetesApiClientRequest request = new KubernetesApiClientRequest(namespace, endpoint);
-
-    Jsonb jsonb = JsonbBuilder.create(
-        new JsonbConfig()
-            .withNullValues(false)
-            .withFormatting(true)
-            .withPropertyOrderStrategy(PropertyOrderStrategy.LEXICOGRAPHICAL));
+    Jsonb jsonb =
+        JsonbBuilder.create(
+            new JsonbConfig()
+                .withNullValues(false)
+                .withFormatting(true)
+                .withPropertyOrderStrategy(PropertyOrderStrategy.LEXICOGRAPHICAL));
 
     if ("get".equals(command)) {
-      get(ksd, request, jsonb)
-          .join();
+      get(discovery, request, jsonb).join();
 
     } else if ("watch".equals(command)) {
       CountDownLatch l = new CountDownLatch(1);
 
-      watch(ksd, request, watchPort, jsonb, l);
+      watch(discovery, request, watchPort, jsonb, l);
 
       l.await(watchTimeout, TimeUnit.SECONDS);
 
@@ -87,19 +65,24 @@ public class App {
   }
 
   private static CompletableFuture<Endpoints> get(
-      KubernetesApiClient ksd, KubernetesApiClientRequest request, Jsonb jsonb) {
-    return ksd.getEndpoints(request)
-        .whenComplete((eps, t) -> {
-          if (t != null) {
-            throw new RuntimeException("Failed", t);
-          }
-          System.out.println(jsonb.toJson(eps));
-        });
+      KubernetesServiceDiscovery discovery, ServiceDiscoveryRequest request, Jsonb jsonb) {
+    return discovery
+        .getEndpoints(request)
+        .whenComplete(
+            (eps, t) -> {
+              if (t != null) {
+                throw new RuntimeException("Failed", t);
+              }
+              System.out.println(jsonb.toJson(eps));
+            });
   }
 
   private static void watch(
-      KubernetesApiClient ksd, KubernetesApiClientRequest request, int watchPort,
-      Jsonb jsonb, CountDownLatch l) {
+      KubernetesServiceDiscovery discovery,
+      ServiceDiscoveryRequest request,
+      int watchPort,
+      Jsonb jsonb,
+      CountDownLatch l) {
 
     SimpleSubscriber<EndpointWatchEvent> subscriber =
         new SimpleSubscriber<>(
@@ -112,9 +95,9 @@ public class App {
               System.out.println(jsonb.toJson(e));
               System.out.println();
               System.out.println(
-                  jsonb.toJson(EndpointExtractor.getAddressesForPort(
-                      e.getObject(), p -> p.getPort() == watchPort
-                      )));
+                  jsonb.toJson(
+                      EndpointExtractor.getAddressesForPort(
+                          e.getObject(), p -> p.getPort() == watchPort)));
               System.out.println();
             },
             t -> {
@@ -125,11 +108,50 @@ public class App {
             },
             () -> {
               System.out.println("COMPLETE");
+
               System.out.println("------------------------------------------------------------");
               l.countDown();
-            }
-        );
+            });
 
-    ksd.watchEndpoints(request).subscribe(subscriber);
+    discovery.watchChanges(request).subscribe(subscriber);
+  }
+
+  private static class CustomHttpHandlerFactory implements ServiceDiscoveryHttpHandlerFactory {
+
+    private Duration watchTimeout;
+
+    public CustomHttpHandlerFactory(Duration watchTimeout) {
+      this.watchTimeout = watchTimeout;
+    }
+
+    @Nonnull
+    @Override
+    public ServiceDiscoveryHttpHandler create(
+        SslContextProvider sslContextProvider, ServiceDiscoveryJsonDeserializer deserializer) {
+
+      ServiceDiscoveryHttpHandler original =
+          new DefaultServiceDiscoveryHttpHandler(sslContextProvider, deserializer, watchTimeout);
+
+      return new ServiceDiscoveryHttpHandler() {
+        @Nonnull
+        @Override
+        public CompletableFuture<Endpoints> getEndpoints(HttpRequest request) {
+          System.out.println("Request: " + request);
+          return original.getEndpoints(request).whenComplete((r, t) -> System.out.println("done4"));
+        }
+
+        @Nonnull
+        @Override
+        public Publisher<EndpointWatchEvent> watchEndpoints(HttpRequest request) {
+          System.out.println("Request: " + request);
+          return original.watchEndpoints(request);
+        }
+
+        @Override
+        public void close() throws Exception {
+          System.out.println("Closing HTTP Client");
+        }
+      };
+    }
   }
 }
