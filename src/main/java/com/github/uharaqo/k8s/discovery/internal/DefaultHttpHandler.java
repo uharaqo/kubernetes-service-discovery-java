@@ -25,7 +25,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 
-class DefaultHttpHandler implements HttpHandler {
+public final class DefaultHttpHandler implements HttpHandler {
 
   private final JsonDeserializer deserializer;
   private final HttpClient httpClient;
@@ -64,6 +64,8 @@ class DefaultHttpHandler implements HttpHandler {
 
                 if (statusCode == 200) {
                   return deserializer.deserializeEndpoints(body);
+                  //                } else if (r.statusCode() == 403) {
+                  // TODO can't continue
                 }
 
                 throw new KubernetesDiscoveryException(
@@ -90,6 +92,9 @@ class DefaultHttpHandler implements HttpHandler {
                   String body = r.body().collect(Collectors.joining(System.lineSeparator()));
                   publisher.closeExceptionally(
                       new KubernetesDiscoveryException(HTTP, "HTTP call failed: " + body, t));
+
+                  //                } else if (r.statusCode() == 403) {
+                  // TODO can't continue
 
                 } else if (r.statusCode() != 200) {
                   String body = r.body().collect(Collectors.joining(System.lineSeparator()));

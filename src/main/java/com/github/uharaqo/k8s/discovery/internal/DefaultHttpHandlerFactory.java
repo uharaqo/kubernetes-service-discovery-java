@@ -6,7 +6,7 @@ import com.github.uharaqo.k8s.discovery.HttpHandlerFactory;
 import com.github.uharaqo.k8s.discovery.JsonDeserializer;
 import com.github.uharaqo.k8s.discovery.SslContextProvider;
 
-class DefaultHttpHandlerFactory implements HttpHandlerFactory {
+public final class DefaultHttpHandlerFactory implements HttpHandlerFactory {
 
   @Override
   public HttpHandler create(

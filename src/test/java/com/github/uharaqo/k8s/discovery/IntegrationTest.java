@@ -84,7 +84,7 @@ public class IntegrationTest {
 
     LinkedBlockingQueue<EndpointWatchEvent> q = new LinkedBlockingQueue<>();
 
-    client.watch(request).subscribe(new EndpointWatchEventSubscriber(q));
+    client.watchEndpoints(request).subscribe(new EndpointWatchEventSubscriber(q));
 
     List<EndpointWatchEvent> l1 = waitForEvents(q, 4);
     assertEquals(4, l1.size(), "Couldn't receive all expected events");

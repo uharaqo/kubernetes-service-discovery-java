@@ -31,7 +31,7 @@ public interface KubernetesApiClient {
    * @return response
    * @throws KubernetesDiscoveryException exception
    */
-  Publisher<EndpointWatchEvent> watch(KubernetesApiClientRequest request)
+  Publisher<EndpointWatchEvent> watchEndpoints(KubernetesApiClientRequest request)
       throws KubernetesDiscoveryException;
 
   // TODO: improve

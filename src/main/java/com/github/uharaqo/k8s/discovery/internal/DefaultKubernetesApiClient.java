@@ -12,7 +12,7 @@ import lombok.AllArgsConstructor;
 
 /** The main class that manages the discovery process. */
 @AllArgsConstructor
-class DefaultKubernetesApiClient implements KubernetesApiClient {
+public final class DefaultKubernetesApiClient implements KubernetesApiClient {
 
   private final HttpHandler http;
   private final HttpRequestFactory factory;
@@ -23,7 +23,7 @@ class DefaultKubernetesApiClient implements KubernetesApiClient {
   }
 
   @Override
-  public Publisher<EndpointWatchEvent> watch(KubernetesApiClientRequest request) {
+  public Publisher<EndpointWatchEvent> watchEndpoints(KubernetesApiClientRequest request) {
     return http.watchEndpoints(factory.forWatch(request));
   }
 }
