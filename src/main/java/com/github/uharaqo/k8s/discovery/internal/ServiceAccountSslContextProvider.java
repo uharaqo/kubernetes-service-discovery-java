@@ -30,7 +30,8 @@ public final class ServiceAccountSslContextProvider implements SslContextProvide
   /**
    * Constructor
    *
-   * @param caCertFilePath CA certificate file for the Kubernetes API. Default: "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt"
+   * @param caCertFilePath CA certificate file for the Kubernetes API. Default:
+   *     "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt"
    */
   public ServiceAccountSslContextProvider(String caCertFilePath) {
     this.caCertFilePath = Utils.toPath(caCertFilePath);

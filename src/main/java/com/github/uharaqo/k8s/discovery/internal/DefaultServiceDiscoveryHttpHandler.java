@@ -11,7 +11,6 @@ import com.github.uharaqo.k8s.discovery.ServiceDiscoveryJsonDeserializer;
 import com.github.uharaqo.k8s.discovery.SslContextProvider;
 import com.github.uharaqo.k8s.discovery.data.EndpointWatchEvent;
 import com.github.uharaqo.k8s.discovery.data.Endpoints;
-import java.io.IOException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse.BodyHandlers;
@@ -103,7 +102,8 @@ public final class DefaultServiceDiscoveryHttpHandler implements ServiceDiscover
                 } else if (r.statusCode() != 200) {
                   String body =
                       r != null && r.body() != null
-                          ? r.body().collect(Collectors.joining(System.lineSeparator())) : "";
+                          ? r.body().collect(Collectors.joining(System.lineSeparator()))
+                          : "";
                   publisher.closeExceptionally(
                       new ServiceDiscoveryException(HTTP, "HTTP error response: " + body, null));
 

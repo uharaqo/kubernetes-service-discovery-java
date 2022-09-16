@@ -37,11 +37,12 @@ public final class DefaultServiceDiscoveryHttpRequestFactory
    * @param protocol Protocol of the API. "http" or "https". Default: "https"
    * @param host Hostname of the Api. default: "KUBERNETES_SERVICE_HOST" environment variable
    * @param port Port of the API. Default: "KUBERNETES_SERVICE_PORT" environment variable
-   * @param tokenFilePath * Access Token file for the Kubernetes API. Default: "/var/run/secrets/kubernetes.io/serviceaccount/token"
+   * @param tokenFilePath * Access Token file for the Kubernetes API. Default:
+   *     "/var/run/secrets/kubernetes.io/serviceaccount/token"
    * @param getTimeoutSec Timeout [seconds] for the GET endpoint API. Default: 5
-   * @param watchTimeoutSec Timeout [seconds] for the GET endpoints API with watch query. Default: 60
+   * @param watchTimeoutSec Timeout [seconds] for the GET endpoints API with watch query. Default:
+   *     60
    */
-
   public DefaultServiceDiscoveryHttpRequestFactory(
       String protocol,
       String host,
@@ -117,11 +118,11 @@ public final class DefaultServiceDiscoveryHttpRequestFactory
 
   private static String[] getHeaders(Path tokenFilePath) {
     try {
-      return new String[]{
-          "Authorization",
-          "Bearer " + Files.readString(tokenFilePath),
-          "User-Agent",
-          "KubernetesServiceDiscovery",
+      return new String[] {
+        "Authorization",
+        "Bearer " + Files.readString(tokenFilePath),
+        "User-Agent",
+        "KubernetesServiceDiscovery",
       };
 
     } catch (Exception e) {
