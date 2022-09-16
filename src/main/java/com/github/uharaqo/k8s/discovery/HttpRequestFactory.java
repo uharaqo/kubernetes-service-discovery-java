@@ -70,7 +70,7 @@ public final class HttpRequestFactory {
   private static URI getNamespacesUri(String protocol, String host, String portText) {
     try {
       int port = Integer.parseInt(portText);
-      return new URI(protocol, null, host, port, "/api/v1/namespaces", null, null);
+      return new URI(protocol, null, host, port, "/api/v1/namespaces/", null, null);
     } catch (Exception e) {
       throw new KubernetesDiscoveryException(HTTP_REQUEST_FACTORY, "Invalid API URI", e);
     }
