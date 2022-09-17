@@ -1,1 +1,3 @@
 rootProject.name = 'kubernetes-service-discovery-java'
+
+include 'lib', 'test-app'

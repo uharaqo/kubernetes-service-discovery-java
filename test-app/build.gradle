@@ -1,12 +1,8 @@
 plugins {
+    id 'java-lib'
     id 'application'
+    id "com.diffplug.spotless" version "6.11.0"
 }
-
-group 'com.github.uharaqo.k8s.discovery'
-version '0.0.1-SNAPSHOT'
-
-sourceCompatibility = 11
-targetCompatibility = 11
 
 application {
     mainClass = 'com.github.uharaqo.k8s.discovery.App'
@@ -23,13 +19,7 @@ jar {
     duplicatesStrategy = 'WARN'
 }
 
-repositories {
-    mavenLocal()
-    mavenCentral()
-}
-
 dependencies {
-    implementation 'com.github.uharaqo.k8s.discovery:kubernetes-service-discovery-java:' + this.version
-//    implementation 'jakarta.json.bind:jakarta.json.bind-api:3.0.0'
+    implementation project(':lib')
     implementation 'org.eclipse:yasson:3.0.2'
 }
