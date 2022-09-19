@@ -2,6 +2,7 @@ package com.github.uharaqo.k8s.discovery.data;
 
 import java.util.Map;
 import lombok.Data;
+import lombok.Generated;
 import lombok.NoArgsConstructor;
 
 /**
@@ -11,6 +12,7 @@ import lombok.NoArgsConstructor;
  */
 @Data
 @NoArgsConstructor
+@Generated
 public class ObjectMeta {
 
   private String clusterName;

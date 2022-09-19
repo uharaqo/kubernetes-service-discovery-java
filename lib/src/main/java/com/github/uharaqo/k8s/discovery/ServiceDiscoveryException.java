@@ -2,6 +2,7 @@ package com.github.uharaqo.k8s.discovery;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import lombok.Getter;
 
 public final class ServiceDiscoveryException extends RuntimeException {
   private final ErrorCause errorCause;
@@ -17,10 +18,16 @@ public final class ServiceDiscoveryException extends RuntimeException {
     return errorCause;
   }
 
+  @Getter
   public enum ErrorCause {
-    HTTP,
-    HTTP_REQUEST_FACTORY,
-    SSL_CONTEXT_PROVIDER,
-    SETUP,
+    HTTP(true),
+    SETUP(false),
+    ;
+
+    private boolean recoverable;
+
+    ErrorCause(boolean recoverable) {
+      this.recoverable = recoverable;
+    }
   }
 }

@@ -1,6 +1,6 @@
 package com.github.uharaqo.k8s.discovery.internal;
 
-import static com.github.uharaqo.k8s.discovery.ServiceDiscoveryException.ErrorCause.SSL_CONTEXT_PROVIDER;
+import static com.github.uharaqo.k8s.discovery.ServiceDiscoveryException.ErrorCause.SETUP;
 
 import com.github.uharaqo.k8s.discovery.ServiceDiscoveryException;
 import com.github.uharaqo.k8s.discovery.SslContextProvider;
@@ -16,6 +16,7 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.util.Collection;
+import java.util.Optional;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
 
@@ -38,31 +39,29 @@ public final class ServiceAccountSslContextProvider implements SslContextProvide
   }
 
   @Override
-  public SSLContext create() {
-    try {
-      byte[] caCert = Files.readAllBytes(caCertFilePath);
-      return newSslContext(caCert);
+  public Optional<SSLContext> create() throws Exception {
+    return Optional.of(newSslContext(readCertFile()));
+  }
 
+  private byte[] readCertFile() {
+    try {
+      return Files.readAllBytes(caCertFilePath);
     } catch (IOException e) {
       throw new ServiceDiscoveryException(
-          SSL_CONTEXT_PROVIDER, "Failed to read ca certificate file: " + caCertFilePath, e);
+          SETUP, "Failed to read ca certificate file: " + caCertFilePath, e);
     }
   }
 
-  private static SSLContext newSslContext(byte[] caCert) {
-    try {
-      KeyStore keyStore = newKeyStore(caCert);
-      TrustManagerFactory trustFactory =
-          TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-      trustFactory.init(keyStore);
+  private static SSLContext newSslContext(byte[] caCert) throws Exception {
+    KeyStore keyStore = newKeyStore(caCert);
+    TrustManagerFactory trustFactory =
+        TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+    trustFactory.init(keyStore);
 
-      final SSLContext ctx = SSLContext.getInstance("TLS");
-      ctx.init(null, trustFactory.getTrustManagers(), new SecureRandom());
+    final SSLContext ctx = SSLContext.getInstance("TLS");
+    ctx.init(null, trustFactory.getTrustManagers(), new SecureRandom());
 
-      return ctx;
-    } catch (Exception e) {
-      throw new ServiceDiscoveryException(SSL_CONTEXT_PROVIDER, "Failed to create SSLContext", e);
-    }
+    return ctx;
   }
 
   private static KeyStore newKeyStore(byte[] caCert)
@@ -75,7 +74,7 @@ public final class ServiceAccountSslContextProvider implements SslContextProvide
     CertificateFactory certFactory = CertificateFactory.getInstance("X.509");
     Collection<? extends Certificate> certificates = certFactory.generateCertificates(trustStream);
     if (certificates.isEmpty()) {
-      throw new IllegalArgumentException("expected non-empty set of trusted certificates");
+      throw new IllegalStateException("expected non-empty set of trusted certificates");
     }
     int index = 0;
     for (Certificate certificate : certificates) {

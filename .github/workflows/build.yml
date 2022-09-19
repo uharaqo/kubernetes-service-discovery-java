@@ -34,8 +34,16 @@ jobs:
       - name: Run Test Coverage
         run: ./gradlew jacocoTestReport
 
-      - name: Generate JaCoCo badge
+      - name: Add coverage to PR
         id: jacoco
+        uses: madrapps/jacoco-report@v1.3
+        with:
+          paths: ${{ github.workspace }}/lib/build/reports/jacoco/test/jacocoTestReport.xml
+          token: ${{ secrets.GITHUB_TOKEN }}
+          min-coverage-overall: 50
+          min-coverage-changed-files: 50
+
+      - name: Generate JaCoCo badge
         uses: cicirello/jacoco-badge-generator@v2
         with:
           jacoco-csv-file: lib/build/reports/jacoco/test/jacocoTestReport.csv
@@ -66,18 +74,18 @@ jobs:
             git push
           fi
 
-      - name: Comment on PR with coverage percentages
-        if: ${{ github.event_name == 'pull_request' }}
-        run: |
-          REPORT=$(<badges/coverage-summary.json)
-          COVERAGE=$(jq -r '.coverage' <<< "$REPORT")%
-          BRANCHES=$(jq -r '.branches' <<< "$REPORT")%
-          NEWLINE=$'\n'
-          BODY="## JaCoCo Test Coverage Summary Statistics${NEWLINE}* __Coverage:__ ${COVERAGE}${NEWLINE}* __Branches:__ ${BRANCHES}"
-          gh pr comment ${{github.event.pull_request.number}} -b "${BODY}"
-        continue-on-error: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#      - name: Comment on PR with coverage percentages
+#        if: ${{ github.event_name == 'pull_request' }}
+#        run: |
+#          REPORT=$(<badges/coverage-summary.json)
+#          COVERAGE=$(jq -r '.coverage' <<< "$REPORT")%
+#          BRANCHES=$(jq -r '.branches' <<< "$REPORT")%
+#          NEWLINE=$'\n'
+#          BODY="## JaCoCo Test Coverage Summary Statistics${NEWLINE}* __Coverage:__ ${COVERAGE}${NEWLINE}* __Branches:__ ${BRANCHES}"
+#          gh pr comment ${{github.event.pull_request.number}} -b "${BODY}"
+#        continue-on-error: true
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 #  publish:
 #    name: Publish Artifacts

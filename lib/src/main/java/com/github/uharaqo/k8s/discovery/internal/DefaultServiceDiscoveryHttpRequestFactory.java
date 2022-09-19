@@ -1,8 +1,6 @@
 package com.github.uharaqo.k8s.discovery.internal;
 
-import static com.github.uharaqo.k8s.discovery.ServiceDiscoveryException.ErrorCause.HTTP_REQUEST_FACTORY;
 import static com.github.uharaqo.k8s.discovery.ServiceDiscoveryException.ErrorCause.SETUP;
-import static com.github.uharaqo.k8s.discovery.ServiceDiscoveryException.ErrorCause.SSL_CONTEXT_PROVIDER;
 import static java.lang.String.format;
 
 import com.github.uharaqo.k8s.discovery.ServiceDiscoveryException;
@@ -63,8 +61,8 @@ public final class DefaultServiceDiscoveryHttpRequestFactory
             resolveUrl(
                 nameSpacesBaseUri,
                 "%s/endpoints/%s?pretty=false&timeoutSeconds=%s",
-                request.namespace,
-                request.endpoint,
+                request.getNamespace(),
+                request.getEndpoint(),
                 String.valueOf(getTimeoutSec)),
         getTimeoutSec);
   }
@@ -76,25 +74,19 @@ public final class DefaultServiceDiscoveryHttpRequestFactory
             resolveUrl(
                 nameSpacesBaseUri,
                 "%s/endpoints?watch=true&fieldSelector=metadata.name=%s&timeoutSeconds=%s",
-                request.namespace,
-                request.endpoint,
+                request.getNamespace(),
+                request.getEndpoint(),
                 String.valueOf(watchTimeoutSec)),
         watchTimeoutSec);
   }
 
   private HttpRequest newRequest(Supplier<URI> uri, int timeoutSec) {
-    try {
-      return HttpRequest.newBuilder()
-          .GET()
-          .uri(uri.get())
-          .headers(getHeaders(tokenFilePath))
-          .timeout(Duration.ofSeconds(timeoutSec * 2))
-          .build();
-    } catch (ServiceDiscoveryException e) {
-      throw e;
-    } catch (Exception e) {
-      throw new ServiceDiscoveryException(SSL_CONTEXT_PROVIDER, "Unknown Exception", e);
-    }
+    return HttpRequest.newBuilder()
+        .GET()
+        .uri(uri.get())
+        .headers(getHeaders(getAuthHeader(tokenFilePath)))
+        .timeout(Duration.ofSeconds(timeoutSec * 2))
+        .build();
   }
 
   private static URI getNamespacesUri(String protocol, String host, String portText) {
@@ -111,23 +103,22 @@ public final class DefaultServiceDiscoveryHttpRequestFactory
     try {
       return baseUri.resolve(uri);
     } catch (Exception e) {
-      throw new ServiceDiscoveryException(
-          HTTP_REQUEST_FACTORY, "Invalid Resource Names: " + uri, e);
+      throw new ServiceDiscoveryException(SETUP, "Invalid Resource Names: " + uri, e);
     }
   }
 
-  private static String[] getHeaders(Path tokenFilePath) {
-    try {
-      return new String[] {
-        "Authorization",
-        "Bearer " + Files.readString(tokenFilePath),
-        "User-Agent",
-        "KubernetesServiceDiscovery",
-      };
+  private static String[] getHeaders(String authHeader) {
+    return new String[] {
+      "Authorization", authHeader, "User-Agent", "KubernetesServiceDiscovery",
+    };
+  }
 
+  private static String getAuthHeader(Path tokenFilePath) {
+    try {
+      return "Bearer " + Files.readString(tokenFilePath);
     } catch (Exception e) {
       throw new ServiceDiscoveryException(
-          HTTP_REQUEST_FACTORY, "Failed to read access token: " + tokenFilePath, e);
+          SETUP, "Failed to read access token: " + tokenFilePath, e);
     }
   }
 }

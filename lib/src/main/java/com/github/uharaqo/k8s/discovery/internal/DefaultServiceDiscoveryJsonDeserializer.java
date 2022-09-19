@@ -6,7 +6,9 @@ import com.github.uharaqo.k8s.discovery.data.Endpoints;
 import jakarta.json.bind.Jsonb;
 import jakarta.json.bind.JsonbBuilder;
 import jakarta.json.bind.JsonbConfig;
+import jakarta.json.bind.JsonbException;
 import jakarta.json.bind.config.PropertyOrderStrategy;
+import java.io.IOException;
 import javax.annotation.Nonnull;
 
 /**
@@ -25,13 +27,21 @@ public final class DefaultServiceDiscoveryJsonDeserializer
 
   @Nonnull
   @Override
-  public Endpoints deserializeEndpoints(String body) {
-    return jsonb.fromJson(body, Endpoints.class);
+  public Endpoints deserializeEndpoints(String body) throws IOException {
+    return deserialize(body, Endpoints.class);
   }
 
   @Nonnull
   @Override
-  public EndpointWatchEvent deserializeEndpointEvent(String body) {
-    return jsonb.fromJson(body, EndpointWatchEvent.class);
+  public EndpointWatchEvent deserializeEndpointEvent(String body) throws IOException {
+    return deserialize(body, EndpointWatchEvent.class);
+  }
+
+  private <T> T deserialize(String json, Class<T> clazz) throws IOException {
+    try {
+      return jsonb.fromJson(json, clazz);
+    } catch (JsonbException e) {
+      throw new IOException("Failed to parse response", e);
+    }
   }
 }

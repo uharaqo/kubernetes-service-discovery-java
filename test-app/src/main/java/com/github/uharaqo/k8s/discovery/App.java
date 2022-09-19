@@ -4,7 +4,6 @@ import com.github.uharaqo.k8s.discovery.data.EndpointExtractor;
 import com.github.uharaqo.k8s.discovery.data.EndpointWatchEvent;
 import com.github.uharaqo.k8s.discovery.data.Endpoints;
 import com.github.uharaqo.k8s.discovery.internal.DefaultServiceDiscoveryHttpHandler;
-import com.github.uharaqo.k8s.discovery.internal.SimpleSubscriber;
 import jakarta.json.bind.Jsonb;
 import jakarta.json.bind.JsonbBuilder;
 import jakarta.json.bind.JsonbConfig;

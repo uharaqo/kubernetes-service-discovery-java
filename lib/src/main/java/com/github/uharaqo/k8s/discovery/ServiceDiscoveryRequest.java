@@ -1,10 +1,12 @@
 package com.github.uharaqo.k8s.discovery;
 
 import javax.annotation.Nonnull;
-import lombok.Value;
+import lombok.Data;
+import lombok.Generated;
 
-@Value
+@Data
+@Generated
 public class ServiceDiscoveryRequest {
-  @Nonnull public String namespace;
-  @Nonnull public String endpoint;
+  @Nonnull private final String namespace;
+  @Nonnull private final String endpoint;
 }
