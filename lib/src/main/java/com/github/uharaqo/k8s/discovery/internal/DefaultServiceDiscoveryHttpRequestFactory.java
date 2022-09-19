@@ -61,8 +61,8 @@ public final class DefaultServiceDiscoveryHttpRequestFactory
             resolveUrl(
                 nameSpacesBaseUri,
                 "%s/endpoints/%s?pretty=false&timeoutSeconds=%s",
-                request.namespace,
-                request.endpoint,
+                request.getNamespace(),
+                request.getEndpoint(),
                 String.valueOf(getTimeoutSec)),
         getTimeoutSec);
   }
@@ -74,8 +74,8 @@ public final class DefaultServiceDiscoveryHttpRequestFactory
             resolveUrl(
                 nameSpacesBaseUri,
                 "%s/endpoints?watch=true&fieldSelector=metadata.name=%s&timeoutSeconds=%s",
-                request.namespace,
-                request.endpoint,
+                request.getNamespace(),
+                request.getEndpoint(),
                 String.valueOf(watchTimeoutSec)),
         watchTimeoutSec);
   }

@@ -1,16 +1,18 @@
 package com.github.uharaqo.k8s.discovery;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.Generated;
+
+@Data
+@AllArgsConstructor
+@Generated
 public final class ServiceDiscoveryRetryConfig {
 
-  public final int maxRetry;
-  public final long maxDurationMs;
+  private final int maxRetry;
+  private final long maxDurationMillis;
 
   public ServiceDiscoveryRetryConfig() {
     this(3, 60_000L);
-  }
-
-  public ServiceDiscoveryRetryConfig(int maxRetry, long maxDurationMs) {
-    this.maxRetry = maxRetry;
-    this.maxDurationMs = maxDurationMs;
   }
 }

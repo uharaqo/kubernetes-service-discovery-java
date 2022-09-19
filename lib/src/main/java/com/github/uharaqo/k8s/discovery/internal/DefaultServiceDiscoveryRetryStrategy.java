@@ -12,8 +12,8 @@ public final class DefaultServiceDiscoveryRetryStrategy implements ServiceDiscov
   private final Instant deadline;
 
   public DefaultServiceDiscoveryRetryStrategy(ServiceDiscoveryRetryConfig retryConfig) {
-    remainingRetry = retryConfig.maxRetry;
-    deadline = Instant.now().plusMillis(retryConfig.maxDurationMs);
+    remainingRetry = retryConfig.getMaxRetry();
+    deadline = Instant.now().plusMillis(retryConfig.getMaxDurationMillis());
   }
 
   public DefaultServiceDiscoveryRetryStrategy(int remainingRetry, Instant deadline) {
