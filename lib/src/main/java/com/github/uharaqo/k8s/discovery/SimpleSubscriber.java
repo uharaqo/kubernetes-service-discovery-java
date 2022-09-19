@@ -1,4 +1,4 @@
-package com.github.uharaqo.k8s.discovery.internal;
+package com.github.uharaqo.k8s.discovery;
 
 import java.util.concurrent.Flow.Subscriber;
 import java.util.concurrent.Flow.Subscription;
@@ -27,9 +27,9 @@ public class SimpleSubscriber<T> implements Subscriber<T> {
   @Override
   public void onSubscribe(Subscription subscription) {
     this.subscription = subscription;
+    subscription.request(1);
     try {
       onSubscribe.accept(subscription);
-      subscription.request(1);
     } catch (Throwable t) {
       onError(t);
     }
@@ -38,8 +38,8 @@ public class SimpleSubscriber<T> implements Subscriber<T> {
   @Override
   public void onNext(T item) {
     try {
-      onNext.accept(item);
       subscription.request(1);
+      onNext.accept(item);
     } catch (Throwable t) {
       onError(t);
     }
@@ -47,8 +47,8 @@ public class SimpleSubscriber<T> implements Subscriber<T> {
 
   @Override
   public void onError(Throwable throwable) {
-    onError.accept(throwable);
     subscription.cancel();
+    onError.accept(throwable);
   }
 
   @Override

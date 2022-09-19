@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import com.github.uharaqo.k8s.discovery.data.EndpointWatchEvent;
 import com.github.uharaqo.k8s.discovery.data.Endpoints;
 import com.github.uharaqo.k8s.discovery.internal.DefaultServiceDiscoveryJsonDeserializer;
+import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
@@ -25,7 +26,7 @@ public class JsonDeserializerTest {
       new DefaultServiceDiscoveryJsonDeserializer();
 
   @Test
-  void get_response() {
+  void get_response() throws IOException {
     Endpoints result = sut.deserializeEndpoints(mockGetResponse);
 
     assertEquals(
@@ -50,7 +51,16 @@ public class JsonDeserializerTest {
   @Test
   void watch_responses() {
     List<EndpointWatchEvent> deserialized =
-        mockWatchResponses.stream().map(sut::deserializeEndpointEvent).collect(Collectors.toList());
+        mockWatchResponses.stream()
+            .map(
+                body -> {
+                  try {
+                    return sut.deserializeEndpointEvent(body);
+                  } catch (IOException e) {
+                    throw new RuntimeException(e);
+                  }
+                })
+            .collect(Collectors.toList());
 
     assertEquals(
         "EndpointWatchEvent(type=ADDED, object=Endpoints(apiVersion=v1, kind=Endpoints,"

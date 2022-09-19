@@ -18,6 +18,7 @@ public final class KubernetesServiceDiscoveryBuilder {
   @Nullable private SslContextProvider sslContextProvider;
   @Nullable private ServiceDiscoveryHttpHandlerFactory httpHandlerFactory;
   @Nullable private ServiceDiscoveryHttpRequestFactory requestFactory;
+  @Nullable private ServiceDiscoveryRetryConfig retryConfig;
 
   @Nonnull
   public KubernetesServiceDiscoveryBuilder withJsonDeserializer(
@@ -48,29 +49,20 @@ public final class KubernetesServiceDiscoveryBuilder {
   }
 
   @Nonnull
-  public KubernetesServiceDiscovery build() {
-    return build(deserializer, sslContextProvider, httpHandlerFactory, requestFactory);
+  public KubernetesServiceDiscoveryBuilder withRetryConfig(
+      ServiceDiscoveryRetryConfig retryConfig) {
+    this.retryConfig = retryConfig;
+    return this;
   }
 
-  public static KubernetesServiceDiscovery build(
-      ServiceDiscoveryJsonDeserializer deserializer,
-      SslContextProvider sslContextProvider,
-      ServiceDiscoveryHttpHandlerFactory httpHandlerFactory,
-      ServiceDiscoveryHttpRequestFactory requestFactory) {
-
-    //    Config c = defaultIfNull(config, () -> Config.builder().build());
-    ServiceDiscoveryJsonDeserializer json =
-        defaultIfNull(deserializer, DefaultServiceDiscoveryJsonDeserializer::new);
-    SslContextProvider ssl =
-        defaultIfNull(sslContextProvider, ServiceAccountSslContextProvider::new);
-
-    ServiceDiscoveryHttpHandlerFactory httpFactory =
-        defaultIfNull(httpHandlerFactory, DefaultServiceDiscoveryHttpHandlerFactory::new);
-
-    ServiceDiscoveryHttpHandler http = httpFactory.create(ssl, json);
-    ServiceDiscoveryHttpRequestFactory req =
-        defaultIfNull(requestFactory, DefaultServiceDiscoveryHttpRequestFactory::new);
-    return new DefaultKubernetesServiceDiscovery(http, req);
+  @Nonnull
+  public KubernetesServiceDiscovery build() {
+    return new DefaultKubernetesServiceDiscovery(
+        defaultIfNull(sslContextProvider, ServiceAccountSslContextProvider::new),
+        defaultIfNull(deserializer, DefaultServiceDiscoveryJsonDeserializer::new),
+        defaultIfNull(httpHandlerFactory, DefaultServiceDiscoveryHttpHandlerFactory::new),
+        defaultIfNull(requestFactory, DefaultServiceDiscoveryHttpRequestFactory::new),
+        defaultIfNull(retryConfig, ServiceDiscoveryRetryConfig::new));
   }
 
   private static <T> T defaultIfNull(T t, Supplier<T> defaultVal) {

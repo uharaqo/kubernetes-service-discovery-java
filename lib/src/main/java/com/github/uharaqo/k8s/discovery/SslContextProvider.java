@@ -1,7 +1,7 @@
 package com.github.uharaqo.k8s.discovery;
 
+import java.util.Optional;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.net.ssl.SSLContext;
 
 public interface SslContextProvider {
@@ -12,16 +12,15 @@ public interface SslContextProvider {
    * @return SSLContext or null if secure protocol is not used
    * @throws Exception exception on creating an SSLContext
    */
-  @Nullable
-  SSLContext create() throws Exception;
+  @Nonnull
+  Optional<SSLContext> create() throws Exception;
 
-  static SslContextProvider noOp() {
-    return new SslContextProvider() {
-      @Nonnull
-      @Override
-      public SSLContext create() {
-        return null;
-      }
-    };
-  }
+  SslContextProvider PLAINTEXT =
+      new SslContextProvider() {
+        @Nonnull
+        @Override
+        public Optional<SSLContext> create() {
+          return Optional.empty();
+        }
+      };
 }
