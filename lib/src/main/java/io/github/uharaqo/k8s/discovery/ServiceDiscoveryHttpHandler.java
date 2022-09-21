@@ -24,6 +24,8 @@ import java.util.concurrent.Flow.Publisher;
 import javax.annotation.Nonnull;
 
 /**
+ * Makes asynchronous calls to Kubernetes API server
+ *
  * @see <a
  *     href="https://kubernetes.io/docs/reference/kubernetes-api/service-resources/endpoints-v1/#get-read-the-specified-endpoints">the
  *     official document:</a>
