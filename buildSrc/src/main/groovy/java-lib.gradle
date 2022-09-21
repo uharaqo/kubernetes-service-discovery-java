@@ -3,12 +3,13 @@ plugins {
     id 'java-library'
     id 'jacoco'
     id "com.diffplug.spotless"
+    id 'sonatype-publish'
 }
 
-sourceCompatibility = 11
-targetCompatibility = 11
-
 java {
+    sourceCompatibility = 11
+    targetCompatibility = 11
+
     withSourcesJar()
     withJavadocJar()
 }
@@ -38,6 +39,12 @@ jacocoTestReport {
     reports {
         csv.required = true
         xml.required = true
+    }
+}
+
+javadoc {
+    if (JavaVersion.current().isJava9Compatible()) {
+        options.addBooleanOption('html5', true)
     }
 }
 
