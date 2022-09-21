@@ -1,5 +1,7 @@
-group 'com.github.uharaqo.k8s.discovery'
+group 'io.github.uharaqo'
 version '0.0.1-SNAPSHOT'
+
+ext.isReleaseVersion = !version.endsWith("SNAPSHOT")
 
 repositories {
     mavenLocal()
